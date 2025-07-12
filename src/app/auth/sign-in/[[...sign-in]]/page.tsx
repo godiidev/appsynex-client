@@ -1,28 +1,38 @@
 import { Metadata } from 'next';
-import SignInViewPage from '@/features/auth/components/sign-in-view';
+import Link from 'next/link';
+import { ChevronLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { LoginForm } from '@/components/auth/login-form';
 
 export const metadata: Metadata = {
-  title: 'Authentication | Sign In',
-  description: 'Sign In page for authentication.'
+  title: 'Đăng nhập - AppSynex',
+  description: 'Đăng nhập vào hệ thống quản lý mẫu vải AppSynex'
 };
 
-export default async function Page() {
-  let stars = 3000; // Default value
+export default function SignInPage() {
+  return (
+    <div className='flex min-h-screen flex-col'>
+      {/* Header */}
+      <div className='flex items-center justify-between p-6'>
+        <Button variant='ghost' size='sm' asChild>
+          <Link href='/' className='flex items-center'>
+            <ChevronLeft className='mr-2 h-4 w-4' />
+            Về trang chủ
+          </Link>
+        </Button>
+      </div>
 
-  try {
-    const response = await fetch(
-      'https://api.github.com/repos/kiranism/next-shadcn-dashboard-starter',
-      {
-        next: { revalidate: 86400 }
-      }
-    );
+      {/* Main Content */}
+      <div className='flex flex-1 items-center justify-center px-6 py-12'>
+        <div className='w-full max-w-md'>
+          <LoginForm />
+        </div>
+      </div>
 
-    if (response.ok) {
-      const data = await response.json();
-      stars = data.stargazers_count || stars; // Update stars if API response is valid
-    }
-  } catch (error) {
-    // Error fetching GitHub stars, using default value
-  }
-  return <SignInViewPage stars={stars} />;
+      {/* Footer */}
+      <div className='text-muted-foreground p-6 text-center text-sm'>
+        <p>&copy; 2024 AppSynex. Tất cả quyền được bảo lưu.</p>
+      </div>
+    </div>
+  );
 }

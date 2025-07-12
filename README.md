@@ -1,115 +1,201 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/9113740/201498864-2a900c64-d88f-4ed4-b5cf-770bcb57e1f5.png">
-  <source media="(prefers-color-scheme: light)" srcset="https://user-images.githubusercontent.com/9113740/201498152-b171abb8-9225-487a-821c-6ff49ee48579.png">
-</picture>
+# Danh Sách Files Cần Sửa/Tạo Mới
 
-<div align="center"><strong>Next.js Admin Dashboard Starter Template With Shadcn-ui</strong></div>
-<div align="center">Built with the Next.js 15 App Router</div>
-<br />
-<div align="center">
-<a href="https://dub.sh/shadcn-dashboard">View Demo</a>
-<span>
-</div>
+## 🔧 Files Cần Sửa Đổi (Từ Template)
 
-## Overview
+### 1. Authentication & Layout
+- `src/app/layout.tsx` - Thay ClerkProvider bằng AuthProvider custom
+- `src/components/layout/app-sidebar.tsx` - Update navigation items
+- `src/components/layout/user-nav.tsx` - Custom user menu với logout
+- `src/app/globals.css` - Giữ nguyên styling
 
-This is a starter template using the following stack:
+### 2. Dashboard & Routes
+- `src/app/dashboard/layout.tsx` - Protected route wrapper
+- `src/app/dashboard/page.tsx` - Dashboard overview
+- `src/app/dashboard/overview/@*` - Dashboard widgets (sửa data source)
 
-- Framework - [Next.js 15](https://nextjs.org/13)
-- Language - [TypeScript](https://www.typescriptlang.org)
-- Auth - [Clerk](https://go.clerk.com/ILdYhn7)
-- Error tracking - [<picture><img alt="Sentry" src="public/assets/sentry.svg">
-        </picture>](https://sentry.io/for/nextjs/?utm_source=github&utm_medium=paid-community&utm_campaign=general-fy26q2-nextjs&utm_content=github-banner-project-tryfree)
-- Styling - [Tailwind CSS v4](https://tailwindcss.com)
-- Components - [Shadcn-ui](https://ui.shadcn.com)
-- Schema Validations - [Zod](https://zod.dev)
-- State Management - [Zustand](https://zustand-demo.pmnd.rs)
-- Search params state manager - [Nuqs](https://nuqs.47ng.com/)
-- Tables - [Tanstack Data Tables](https://ui.shadcn.com/docs/components/data-table) • [Dice table](https://www.diceui.com/docs/components/data-table)
-- Forms - [React Hook Form](https://ui.shadcn.com/docs/components/form)
-- Command+k interface - [kbar](https://kbar.vercel.app/)
-- Linting - [ESLint](https://eslint.org)
-- Pre-commit Hooks - [Husky](https://typicode.github.io/husky/)
-- Formatting - [Prettier](https://prettier.io)
+### 3. Product → Sample Migration
+- `src/app/dashboard/product/` → `src/app/dashboard/samples/`
+- `src/features/products/` → `src/features/samples/`
+- `src/constants/data.ts` - Remove mock data, add API types
 
-_If you are looking for a Tanstack start dashboard template, here is the [repo](https://git.new/tanstack-start-dashboard)._
+### 4. User Management (Giữ cấu trúc, sửa data)
+- `src/features/auth/components/user-auth-form.tsx`
+- `src/features/auth/components/sign-in-view.tsx`
 
-## Pages
+## 🆕 Files Cần Tạo Mới
 
-| Pages                                                                                 | Specifications                                                                                                                                                                                                                                                          |
-| :------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Signup / Signin](https://go.clerk.com/ILdYhn7)      | Authentication with **Clerk** provides secure authentication and user management with multiple sign-in options including passwordless authentication, social logins, and enterprise SSO - all designed to enhance security while delivering a seamless user experience. |
-| [Dashboard (Overview)](https://shadcn-dashboard.kiranism.dev/dashboard)    | Cards with Recharts graphs for analytics. Parallel routes in the overview sections feature independent loading, error handling, and isolated component rendering. |
-| [Product](https://shadcn-dashboard.kiranism.dev/dashboard/product)         | Tanstack tables with server side searching, filter, pagination by Nuqs which is a Type-safe search params state manager in nextjs                                                                                                                                       |
-| [Product/new](https://shadcn-dashboard.kiranism.dev/dashboard/product/new) | A Product Form with shadcn form (react-hook-form + zod).                                                                                                                                                                                                                |
-| [Profile](https://shadcn-dashboard.kiranism.dev/dashboard/profile)         | Clerk's full-featured account management UI that allows users to manage their profile and security settings                                                                                                                                                             |
-| [Kanban Board](https://shadcn-dashboard.kiranism.dev/dashboard/kanban)     | A Drag n Drop task management board with dnd-kit and zustand to persist state locally.                                                                                                                                                                                  |
-| [Not Found](https://shadcn-dashboard.kiranism.dev/dashboard/notfound)      | Not Found Page Added in the root level                                                                                                                                                                                                                                  |
-| [Global Error](https://sentry.io/for/nextjs/?utm_source=github&utm_medium=paid-community&utm_campaign=general-fy26q2-nextjs&utm_content=github-banner-project-tryfree)           | A centralized error page that captures and displays errors across the application. Integrated with **Sentry** to log errors, provide detailed reports, and enable replay functionality for better debugging. |
+### 1. API Integration
+```
+src/lib/
+├── api-client.ts              # Axios client with auth
+├── auth.ts                    # Auth utilities
+├── permissions.ts             # Permission checking
+└── storage.ts                 # Token storage
 
-## Feature based organization
-
-```plaintext
-src/
-├── app/ # Next.js App Router directory
-│ ├── (auth)/ # Auth route group
-│ │ ├── (signin)/
-│ ├── (dashboard)/ # Dashboard route group
-│ │ ├── layout.tsx
-│ │ ├── loading.tsx
-│ │ └── page.tsx
-│ └── api/ # API routes
-│
-├── components/ # Shared components
-│ ├── ui/ # UI components (buttons, inputs, etc.)
-│ └── layout/ # Layout components (header, sidebar, etc.)
-│
-├── features/ # Feature-based modules
-│ ├── feature/
-│ │ ├── components/ # Feature-specific components
-│ │ ├── actions/ # Server actions
-│ │ ├── schemas/ # Form validation schemas
-│ │ └── utils/ # Feature-specific utilities
-│ │
-├── lib/ # Core utilities and configurations
-│ ├── auth/ # Auth configuration
-│ ├── db/ # Database utilities
-│ └── utils/ # Shared utilities
-│
-├── hooks/ # Custom hooks
-│ └── use-debounce.ts
-│
-├── stores/ # Zustand stores
-│ └── dashboard-store.ts
-│
-└── types/ # TypeScript types
-└── index.ts
+src/types/
+├── api.ts                     # API response types
+├── auth.ts                    # Auth types
+├── sample.ts                  # Sample types
+└── user.ts                    # User types
 ```
 
-## Getting Started
-
-> [!NOTE]  
-> We are using **Next 15** with **React 19**, follow these steps:
-
-Clone the repo:
-
+### 2. Authentication System
 ```
-git clone https://github.com/Kiranism/next-shadcn-dashboard-starter.git
+src/providers/
+├── auth-provider.tsx          # Auth context provider
+└── query-provider.tsx        # React Query provider
+
+src/hooks/
+├── use-auth.ts               # Auth hook
+├── use-api.ts                # API hooks
+├── use-samples.ts            # Sample data hooks
+└── use-permissions.ts        # Permission hooks
+
+src/components/auth/
+├── login-form.tsx            # Custom login form
+├── protected-route.tsx       # Route protection
+└── permission-guard.tsx      # Permission checking
 ```
 
-- `pnpm install` ( we have legacy-peer-deps=true added in the .npmrc)
-- Create a `.env.local` file by copying the example environment file:
-  `cp env.example.txt .env.local`
-- Add the required environment variables to the `.env.local` file.
-- `pnpm run dev`
+### 3. Sample Management (Thay thế Product)
+```
+src/app/dashboard/samples/
+├── page.tsx                  # Sample list page
+├── [sampleId]/
+│   └── page.tsx             # Sample detail page
+└── new/
+    └── page.tsx             # Create sample page
 
-##### Environment Configuration Setup
+src/features/samples/
+├── components/
+│   ├── sample-listing.tsx    # Sample table
+│   ├── sample-form.tsx       # Create/Edit form
+│   ├── sample-filters.tsx    # Advanced filters
+│   └── sample-tables/
+│       ├── columns.tsx       # Table columns
+│       ├── cell-action.tsx   # Row actions
+│       └── index.tsx         # Table component
+└── hooks/
+    ├── use-samples.ts        # Sample data hooks
+    └── use-sample-filters.ts # Filter hooks
+```
 
-To configure the environment for this project, refer to the `env.example.txt` file. This file contains the necessary environment variables required for authentication and error tracking.
+### 4. Public Homepage
+```
+src/app/
+├── page.tsx                  # Public homepage
+└── (public)/
+    ├── layout.tsx           # Public layout
+    └── about/
+        └── page.tsx         # About page
 
-You should now be able to access the application at http://localhost:3000.
+src/components/public/
+├── hero-section.tsx         # Homepage hero
+├── product-showcase.tsx     # Sample showcase
+└── public-header.tsx        # Public navigation
+```
 
-> [!WARNING]
-> After cloning or forking the repository, be cautious when pulling or syncing with the latest changes, as this may result in breaking conflicts.
+### 5. User & Category Management
+```
+src/app/dashboard/users/
+├── page.tsx                 # User list
+├── [userId]/
+│   └── page.tsx            # User detail
+└── new/
+    └── page.tsx            # Create user
 
-Cheers! 🥂
+src/app/dashboard/categories/
+├── page.tsx                # Category list
+└── new/
+    └── page.tsx           # Create category
+
+src/features/users/
+└── components/
+    ├── user-listing.tsx    # User table
+    ├── user-form.tsx       # User form
+    └── role-assignment.tsx # Role management
+
+src/features/categories/
+└── components/
+    ├── category-listing.tsx # Category table
+    └── category-form.tsx    # Category form
+```
+
+### 6. Configuration Files
+```
+next.config.js               # Next.js config
+tailwind.config.js          # Tailwind config (có sẵn)
+components.json             # ShadCN config (có sẵn)
+.env.local                  # Environment variables
+.env.example                # Environment template
+```
+
+## 📊 Data Flow Architecture
+
+### 1. Authentication Flow
+```
+Login Form → API Call → JWT Token → Store in Cookie → Redirect to Dashboard
+```
+
+### 2. API Integration Pattern
+```
+Component → Custom Hook → API Client → Go Server → Database
+```
+
+### 3. Permission Checking
+```
+Route Access → Permission Guard → API Permission Check → Component Rendering
+```
+
+## 🛠️ Implementation Order
+
+### Phase 1: Core Setup
+1. Setup project structure
+2. Install dependencies
+3. Configure API client
+4. Create auth system
+
+### Phase 2: Authentication
+1. Custom auth provider
+2. Login/logout functionality
+3. Protected routes
+4. Permission system
+
+### Phase 3: Sample Management
+1. Convert product to sample
+2. API integration
+3. CRUD operations
+4. Advanced filtering
+
+### Phase 4: User Management
+1. User listing
+2. Role management
+3. Permission assignment
+
+### Phase 5: Polish & Features
+1. Public homepage
+2. Error handling
+3. Loading states
+4. Responsive design
+
+## 🔍 Key Template Modifications
+
+### Remove Clerk Dependencies
+- Remove `@clerk/nextjs` package
+- Replace `ClerkProvider` with custom `AuthProvider`
+- Update `middleware.ts` for custom auth
+
+### Update Navigation
+- Modify sidebar navigation items
+- Add permission-based menu visibility
+- Update user dropdown menu
+
+### Data Integration
+- Replace mock data with API calls
+- Add loading states
+- Implement error handling
+
+### Styling Consistency
+- Keep existing dark/light theme
+- Maintain ShadCN UI components
+- Preserve responsive design
