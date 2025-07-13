@@ -1,3 +1,4 @@
+//src/components/layout/app-sidebar.tsx
 'use client';
 
 import {
@@ -50,12 +51,12 @@ const navigation = [
     items: [
       {
         title: 'Danh sách mẫu',
-        url: '/dashboard/samples',
+        url: '/dashboard/sample',
         permission: { module: 'SAMPLE', action: 'VIEW' }
       },
       {
         title: 'Thêm mẫu mới',
-        url: '/dashboard/samples/new',
+        url: '/dashboard/sample/new',
         permission: { module: 'SAMPLE', action: 'CREATE' }
       }
     ]
@@ -83,12 +84,12 @@ const navigation = [
     items: [
       {
         title: 'Danh sách người dùng',
-        url: '/dashboard/users',
+        url: '/dashboard/user',
         permission: { module: 'USER', action: 'VIEW' }
       },
       {
         title: 'Thêm người dùng',
-        url: '/dashboard/users/new',
+        url: '/dashboard/user/new',
         permission: { module: 'USER', action: 'CREATE' }
       }
     ]

@@ -1,3 +1,4 @@
+// src/components/user-avatar-profile.tsx
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface UserAvatarProfileProps {

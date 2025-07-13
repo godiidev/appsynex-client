@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '@/components/layout/ThemeToggle/theme-toggle';
+import { ModeToggle } from '@/components/layout/ThemeToggle/theme-toggle';
 import { useAuth } from '@/providers/auth-provider';
 
 export function PublicHeader() {
@@ -43,7 +43,7 @@ export function PublicHeader() {
 
           {/* Right section */}
           <div className='flex items-center space-x-4'>
-            <ThemeToggle />
+            <ModeToggle />
 
             {isAuthenticated ? (
               <div className='flex items-center space-x-3'>

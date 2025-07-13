@@ -1,102 +1,72 @@
+// src/components/theme-selector.tsx
 'use client';
 
-import { useThemeConfig } from '@/components/active-theme';
-import { Label } from '@/components/ui/label';
+import * as React from 'react';
+import { useTheme } from 'next-themes';
+import { Button } from '@/components/ui/button';
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import { Palette } from 'lucide-react';
 
-const DEFAULT_THEMES = [
-  {
-    name: 'Default',
-    value: 'default'
-  },
-  {
-    name: 'Blue',
-    value: 'blue'
-  },
-  {
-    name: 'Green',
-    value: 'green'
-  },
-  {
-    name: 'Amber',
-    value: 'amber'
-  }
-];
-
-const SCALED_THEMES = [
-  {
-    name: 'Default',
-    value: 'default-scaled'
-  },
-  {
-    name: 'Blue',
-    value: 'blue-scaled'
-  }
-];
-
-const MONO_THEMES = [
-  {
-    name: 'Mono',
-    value: 'mono-scaled'
-  }
+const themes = [
+  { name: 'Default', value: 'default' },
+  { name: 'New York', value: 'new-york' },
+  { name: 'Blue', value: 'blue' },
+  { name: 'Green', value: 'green' },
+  { name: 'Orange', value: 'orange' },
+  { name: 'Red', value: 'red' },
+  { name: 'Rose', value: 'rose' },
+  { name: 'Slate', value: 'slate' },
+  { name: 'Stone', value: 'stone' },
+  { name: 'Violet', value: 'violet' },
+  { name: 'Yellow', value: 'yellow' },
+  { name: 'Zinc', value: 'zinc' }
 ];
 
 export function ThemeSelector() {
-  const { activeTheme, setActiveTheme } = useThemeConfig();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <Button variant='ghost' size='sm'>
+        <Palette className='h-4 w-4' />
+      </Button>
+    );
+  }
 
   return (
-    <div className='flex items-center gap-2'>
-      <Label htmlFor='theme-selector' className='sr-only'>
-        Theme
-      </Label>
-      <Select value={activeTheme} onValueChange={setActiveTheme}>
-        <SelectTrigger
-          id='theme-selector'
-          className='justify-start *:data-[slot=select-value]:w-12'
-        >
-          <span className='text-muted-foreground hidden sm:block'>
-            Select a theme:
-          </span>
-          <span className='text-muted-foreground block sm:hidden'>Theme</span>
-          <SelectValue placeholder='Select a theme' />
-        </SelectTrigger>
-        <SelectContent align='end'>
-          <SelectGroup>
-            <SelectLabel>Default</SelectLabel>
-            {DEFAULT_THEMES.map((theme) => (
-              <SelectItem key={theme.name} value={theme.value}>
-                {theme.name}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-          <SelectSeparator />
-          <SelectGroup>
-            <SelectLabel>Scaled</SelectLabel>
-            {SCALED_THEMES.map((theme) => (
-              <SelectItem key={theme.name} value={theme.value}>
-                {theme.name}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-          <SelectGroup>
-            <SelectLabel>Monospaced</SelectLabel>
-            {MONO_THEMES.map((theme) => (
-              <SelectItem key={theme.name} value={theme.value}>
-                {theme.name}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant='ghost' size='sm'>
+          <Palette className='h-4 w-4' />
+          <span className='sr-only'>Select theme</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align='end' className='w-[200px]'>
+        {themes.map((themeOption) => (
+          <DropdownMenuItem
+            key={themeOption.value}
+            onClick={() => setTheme(themeOption.value)}
+            className='cursor-pointer'
+          >
+            <div className='flex w-full items-center justify-between'>
+              <span>{themeOption.name}</span>
+              {theme === themeOption.value && (
+                <div className='bg-primary h-2 w-2 rounded-full' />
+              )}
+            </div>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

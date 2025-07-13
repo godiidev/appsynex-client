@@ -1,3 +1,4 @@
+//src/components/layout/header.tsx
 import React from 'react';
 import { SidebarTrigger } from '../ui/sidebar';
 import { Separator } from '../ui/separator';

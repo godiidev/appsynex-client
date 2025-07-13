@@ -1,3 +1,4 @@
+//src/lib/searchparams.ts
 import {
   createSearchParamsCache,
   createSerializer,
@@ -9,11 +10,13 @@ export const searchParams = {
   page: parseAsInteger.withDefault(1),
   perPage: parseAsInteger.withDefault(10),
   name: parseAsString,
-  gender: parseAsString,
-  category: parseAsString
-  // advanced filter
-  // filters: getFiltersStateParser().withDefault([]),
-  // joinOperator: parseAsStringEnum(['and', 'or']).withDefault('and')
+  category: parseAsString,
+  sample_type: parseAsString,
+  color: parseAsString,
+  weight_min: parseAsInteger,
+  weight_max: parseAsInteger,
+  width_min: parseAsInteger,
+  width_max: parseAsInteger
 };
 
 export const searchParamsCache = createSearchParamsCache(searchParams);
