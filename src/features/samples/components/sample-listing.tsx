@@ -1,6 +1,7 @@
-//src/features/samples/components/sample-listing.tsx
+//src/features/samples/components/sample-listing.tsx - Updated for server-side auth
 import { SampleProduct } from '@/types/api';
-import { apiClient } from '@/lib/api-client';
+import { ApiClient } from '@/lib/api-client';
+import { requireAuth, requirePermission } from '@/lib/server-auth';
 import { searchParamsCache } from '@/lib/searchparams';
 import { SampleTable } from './sample-tables';
 import { columns } from './sample-tables/columns';
@@ -8,6 +9,13 @@ import { columns } from './sample-tables/columns';
 type SampleListingPageProps = {};
 
 export default async function SampleListingPage({}: SampleListingPageProps) {
+  // Check authentication and permission
+  const token = await requireAuth();
+  await requirePermission('SAMPLE', 'VIEW');
+
+  // Create server-side API client with token
+  const serverApiClient = ApiClient.createServerClient(token);
+
   // Showcasing the use of search params cache in nested RSCs
   const page = searchParamsCache.get('page');
   const search = searchParamsCache.get('name');
@@ -34,7 +42,13 @@ export default async function SampleListingPage({}: SampleListingPageProps) {
   };
 
   try {
-    const data = await apiClient.getSamples(filters);
+    console.log('Server-side fetching samples with token and filters:', {
+      hasToken: !!token,
+      tokenPreview: token ? `${token.substring(0, 10)}...` : 'none',
+      filters
+    });
+
+    const data = await serverApiClient.getSamples(filters);
     const totalSamples = data.total_items;
     const samples: SampleProduct[] = data.items;
 
@@ -42,8 +56,21 @@ export default async function SampleListingPage({}: SampleListingPageProps) {
       <SampleTable data={samples} totalItems={totalSamples} columns={columns} />
     );
   } catch (error) {
-    console.error('Error fetching samples:', error);
-    // Return empty state or error component
+    console.error('Error fetching samples on server-side:', error);
+
+    // If it's an auth error, redirect to login
+    if (
+      error instanceof Error &&
+      error.message.includes('Authentication required')
+    ) {
+      console.error(
+        'Authentication error on server-side, redirecting to login'
+      );
+      // Don't use redirect here as it might cause issues
+      // Instead, return empty state and let client-side handle it
+    }
+
+    // For other errors, return empty state
     return <SampleTable data={[]} totalItems={0} columns={columns} />;
   }
 }

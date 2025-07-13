@@ -1,4 +1,4 @@
-//src/lib/api-client.ts
+//src/lib/api-client.ts - Updated with server-side cookie support
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 import { getToken, removeToken } from './storage';
 import type {
@@ -35,7 +35,14 @@ class ApiClient {
     // Request interceptor to add auth token
     this.client.interceptors.request.use(
       (config) => {
-        const token = getToken();
+        // Try to get token from client-side storage only
+        let token: string | null = null;
+
+        // Only try client-side storage (for client-side requests)
+        if (typeof window !== 'undefined') {
+          token = getToken();
+        }
+
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -45,7 +52,8 @@ class ApiClient {
           method: config.method?.toUpperCase(),
           url: `${config.baseURL}${config.url}`,
           hasAuth: !!token,
-          token: token ? `${token.substring(0, 10)}...` : 'none'
+          token: token ? `${token.substring(0, 10)}...` : 'none',
+          isServer: typeof window === 'undefined'
         });
 
         return config;
@@ -70,22 +78,46 @@ class ApiClient {
           data: error.response?.data,
           url: error.config?.url,
           method: error.config?.method,
-          baseURL: error.config?.baseURL
+          baseURL: error.config?.baseURL,
+          isServer: typeof window === 'undefined'
         });
 
-        // Handle 401 specifically
-        if (error.response?.status === 401) {
+        // Handle 401 specifically (only on client-side)
+        if (error.response?.status === 401 && typeof window !== 'undefined') {
           console.log(
             '401 Unauthorized - Removing token and redirecting to login'
           );
           removeToken();
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login';
-          }
+          window.location.href = '/auth/sign-in';
         }
         return Promise.reject(error);
       }
     );
+  }
+
+  // Create a server-side client with explicit token
+  static createServerClient(token: string): ApiClient {
+    const client = new ApiClient();
+
+    // Override the default interceptor for server-side usage
+    client.client.interceptors.request.clear();
+    client.client.interceptors.request.use(
+      (config) => {
+        config.headers.Authorization = `Bearer ${token}`;
+
+        console.log('Server API Request:', {
+          method: config.method?.toUpperCase(),
+          url: `${config.baseURL}${config.url}`,
+          hasAuth: !!token,
+          token: token ? `${token.substring(0, 10)}...` : 'none'
+        });
+
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+
+    return client;
   }
 
   private async handleResponse<T>(response: AxiosResponse): Promise<T> {
@@ -118,7 +150,8 @@ class ApiClient {
       message,
       url: error.config?.url,
       method: error.config?.method,
-      headers: error.config?.headers
+      headers: error.config?.headers,
+      isServer: typeof window === 'undefined'
     });
 
     throw new Error(message);
@@ -346,6 +379,9 @@ class ApiClient {
   }
 }
 
-// Export singleton instance
+// Export singleton instance for client-side
 export const apiClient = new ApiClient();
+
+// Export class for server-side usage with explicit token
+export { ApiClient };
 export default apiClient;
