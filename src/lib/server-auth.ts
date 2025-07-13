@@ -1,11 +1,11 @@
-//src/lib/server-auth.ts - Server-side authentication utilities
+//src/lib/server-auth.ts - Server-side authentication utilities with async cookies
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 // Helper function to get token from server-side cookies
 export async function getServerToken(): Promise<string | null> {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     return cookieStore.get('appsynex_token')?.value || null;
   } catch (error) {
     console.log('Could not get server token:', error);
@@ -27,7 +27,7 @@ export async function requireAuth(): Promise<string> {
 // Helper function to get user data from server-side cookies
 export async function getServerUser(): Promise<any | null> {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const userData = cookieStore.get('appsynex_user')?.value;
     return userData ? JSON.parse(userData) : null;
   } catch (error) {
