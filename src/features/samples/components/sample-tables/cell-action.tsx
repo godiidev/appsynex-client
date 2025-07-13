@@ -23,7 +23,7 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 import { SampleProduct } from '@/types/api';
-import { useDeleteSample } from '@/hooks/use-api';
+import { apiClient } from '@/lib/api-client';
 import { PermissionGuard } from '@/components/auth/permission-guard';
 import { toast } from 'sonner';
 
@@ -31,10 +31,10 @@ interface CellActionProps {
   data: SampleProduct;
 }
 
-export function CellAction({ data }: CellActionProps) {
+export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const deleteMutation = useDeleteSample();
 
   const onCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -42,19 +42,24 @@ export function CellAction({ data }: CellActionProps) {
   };
 
   const onView = () => {
-    router.push(`/dashboard/samples/${data.id}`);
+    router.push(`/dashboard/sample/${data.id}`);
   };
 
   const onEdit = () => {
-    router.push(`/dashboard/samples/${data.id}/edit`);
+    router.push(`/dashboard/sample/${data.id}/edit`);
   };
 
   const onDelete = async () => {
     try {
-      await deleteMutation.mutateAsync(data.id);
+      setLoading(true);
+      await apiClient.deleteSample(data.id);
+      toast.success('Xóa mẫu vải thành công');
+      router.refresh();
       setShowDeleteAlert(false);
     } catch (error) {
-      // Error is handled by the mutation
+      toast.error('Có lỗi xảy ra khi xóa mẫu vải');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -116,13 +121,13 @@ export function CellAction({ data }: CellActionProps) {
             <AlertDialogAction
               onClick={onDelete}
               className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
-              disabled={deleteMutation.isPending}
+              disabled={loading}
             >
-              {deleteMutation.isPending ? 'Đang xóa...' : 'Xóa'}
+              {loading ? 'Đang xóa...' : 'Xóa'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
   );
-}
+};

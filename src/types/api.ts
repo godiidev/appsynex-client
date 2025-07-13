@@ -51,8 +51,20 @@ export interface SampleProduct {
   barcode: string;
   created_at: string;
   updated_at: string;
-  product_name?: ProductNameResponse;
-  category?: CategoryResponse;
+  product_name?: {
+    id: number;
+    product_name_vi: string;
+    product_name_en: string;
+    sku_parent: string;
+  };
+  category?: {
+    id: number;
+    category_name: string;
+    parent_category_id?: number;
+    description: string;
+    created_at: string;
+    updated_at: string;
+  };
 }
 
 export interface ProductNameResponse {

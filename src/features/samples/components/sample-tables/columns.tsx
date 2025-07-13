@@ -1,267 +1,196 @@
 'use client';
-
-import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
+import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
 import { SampleProduct } from '@/types/api';
+import { Column, ColumnDef } from '@tanstack/react-table';
+import { Package, Text, Palette, Weight, Ruler } from 'lucide-react';
 import { CellAction } from './cell-action';
-import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import {
+  CATEGORY_OPTIONS,
+  SAMPLE_TYPE_OPTIONS,
+  COLOR_OPTIONS
+} from './options';
 
-export const getColumns = (): ColumnDef<SampleProduct>[] => [
+export const columns: ColumnDef<SampleProduct>[] = [
   {
-    id: 'select',
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && 'indeterminate')
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label='Chọn tất cả'
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label='Chọn dòng'
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false
-  },
-  {
+    id: 'sku',
     accessorKey: 'sku',
-    header: ({ column }) => (
-      <Button
-        variant='ghost'
-        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className='h-auto p-0 font-semibold'
-      >
-        SKU
-        <ArrowUpDown className='ml-2 h-4 w-4' />
-      </Button>
+    header: ({ column }: { column: Column<SampleProduct, unknown> }) => (
+      <DataTableColumnHeader column={column} title='SKU' />
     ),
-    cell: ({ row }) => (
-      <div className='font-mono text-sm font-medium'>{row.getValue('sku')}</div>
-    )
+    cell: ({ cell }) => (
+      <div className='font-mono font-medium'>
+        {cell.getValue<SampleProduct['sku']>()}
+      </div>
+    ),
+    meta: {
+      label: 'SKU',
+      placeholder: 'Search by SKU...',
+      variant: 'text',
+      icon: Package
+    },
+    enableColumnFilter: true
   },
   {
-    accessorKey: 'product_name',
-    header: 'Tên sản phẩm',
+    id: 'product_name',
+    accessorFn: (row) => row.product_name?.product_name_vi || '',
+    header: ({ column }: { column: Column<SampleProduct, unknown> }) => (
+      <DataTableColumnHeader column={column} title='Tên sản phẩm' />
+    ),
     cell: ({ row }) => {
       const productName = row.original.product_name;
       return (
-        <div className='max-w-[200px]'>
-          <div className='truncate font-medium'>
+        <div>
+          <div className='font-medium'>
             {productName?.product_name_vi || 'N/A'}
           </div>
-          <div className='text-muted-foreground truncate text-sm'>
+          <div className='text-muted-foreground text-sm'>
             {productName?.product_name_en || ''}
           </div>
         </div>
       );
-    }
+    },
+    meta: {
+      label: 'Product Name',
+      placeholder: 'Search products...',
+      variant: 'text',
+      icon: Text
+    },
+    enableColumnFilter: true
   },
   {
-    accessorKey: 'category',
-    header: 'Danh mục',
+    id: 'category',
+    accessorFn: (row) => row.category?.category_name || '',
+    header: ({ column }: { column: Column<SampleProduct, unknown> }) => (
+      <DataTableColumnHeader column={column} title='Danh mục' />
+    ),
     cell: ({ row }) => {
       const category = row.original.category;
       return (
         <Badge variant='outline'>{category?.category_name || 'N/A'}</Badge>
       );
+    },
+    enableColumnFilter: true,
+    meta: {
+      label: 'Category',
+      variant: 'multiSelect',
+      options: CATEGORY_OPTIONS
     }
   },
   {
+    id: 'sample_type',
     accessorKey: 'sample_type',
-    header: 'Loại mẫu',
-    cell: ({ row }) => {
-      const sampleType = row.getValue('sample_type') as string;
-      if (!sampleType)
-        return <span className='text-muted-foreground'>N/A</span>;
-
-      const getVariant = (type: string) => {
-        switch (type) {
-          case 'Vải mét':
-            return 'default';
-          case 'Vải cây':
-            return 'secondary';
-          case 'Mẫu nhỏ':
-            return 'outline';
-          case 'Mẫu lớn':
-            return 'destructive';
-          default:
-            return 'outline';
-        }
-      };
-
-      return (
-        <Badge variant={getVariant(sampleType) as any}>{sampleType}</Badge>
-      );
-    }
-  },
-  {
-    accessorKey: 'weight',
-    header: ({ column }) => (
-      <Button
-        variant='ghost'
-        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className='h-auto p-0 font-semibold'
-      >
-        Trọng lượng
-        <ArrowUpDown className='ml-2 h-4 w-4' />
-      </Button>
+    header: ({ column }: { column: Column<SampleProduct, unknown> }) => (
+      <DataTableColumnHeader column={column} title='Loại mẫu' />
     ),
-    cell: ({ row }) => {
-      const weight = row.getValue('weight') as number;
-      return weight ? (
-        <span className='font-medium'>{weight} GSM</span>
-      ) : (
-        <span className='text-muted-foreground'>N/A</span>
-      );
+    cell: ({ cell }) => {
+      const sampleType = cell.getValue<SampleProduct['sample_type']>();
+      return <Badge variant='secondary'>{sampleType || 'N/A'}</Badge>;
+    },
+    enableColumnFilter: true,
+    meta: {
+      label: 'Sample Type',
+      variant: 'select',
+      options: SAMPLE_TYPE_OPTIONS
     }
   },
   {
-    accessorKey: 'width',
-    header: ({ column }) => (
-      <Button
-        variant='ghost'
-        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className='h-auto p-0 font-semibold'
-      >
-        Chiều rộng
-        <ArrowUpDown className='ml-2 h-4 w-4' />
-      </Button>
-    ),
-    cell: ({ row }) => {
-      const width = row.getValue('width') as number;
-      return width ? (
-        <span className='font-medium'>{width} CM</span>
-      ) : (
-        <span className='text-muted-foreground'>N/A</span>
-      );
-    }
-  },
-  {
+    id: 'color',
     accessorKey: 'color',
-    header: 'Màu sắc',
-    cell: ({ row }) => {
-      const color = row.getValue('color') as string;
-      const colorCode = row.original.color_code;
-
-      if (!color) return <span className='text-muted-foreground'>N/A</span>;
-
+    header: ({ column }: { column: Column<SampleProduct, unknown> }) => (
+      <DataTableColumnHeader column={column} title='Màu sắc' />
+    ),
+    cell: ({ cell }) => {
+      const color = cell.getValue<SampleProduct['color']>();
       return (
         <div className='flex items-center gap-2'>
           <div
-            className='border-muted-foreground/20 h-4 w-4 rounded border'
-            style={{ backgroundColor: getColorValue(color) }}
-            title={colorCode || color}
+            className='h-4 w-4 rounded border'
+            style={{
+              backgroundColor: getColorValue(color)
+            }}
           />
-          <span className='font-medium'>{color}</span>
-          {colorCode && (
-            <span className='text-muted-foreground text-xs'>({colorCode})</span>
-          )}
+          {color || 'N/A'}
         </div>
       );
+    },
+    enableColumnFilter: true,
+    meta: {
+      label: 'Color',
+      variant: 'select',
+      options: COLOR_OPTIONS,
+      icon: Palette
     }
   },
   {
+    id: 'weight',
+    accessorKey: 'weight',
+    header: ({ column }: { column: Column<SampleProduct, unknown> }) => (
+      <DataTableColumnHeader column={column} title='Trọng lượng' />
+    ),
+    cell: ({ cell }) => {
+      const weight = cell.getValue<SampleProduct['weight']>();
+      return weight ? `${weight} GSM` : 'N/A';
+    },
+    meta: {
+      label: 'Weight',
+      variant: 'range',
+      range: [0, 1000],
+      unit: 'GSM',
+      icon: Weight
+    }
+  },
+  {
+    id: 'width',
+    accessorKey: 'width',
+    header: ({ column }: { column: Column<SampleProduct, unknown> }) => (
+      <DataTableColumnHeader column={column} title='Chiều rộng' />
+    ),
+    cell: ({ cell }) => {
+      const width = cell.getValue<SampleProduct['width']>();
+      return width ? `${width} CM` : 'N/A';
+    },
+    meta: {
+      label: 'Width',
+      variant: 'range',
+      range: [0, 300],
+      unit: 'CM',
+      icon: Ruler
+    }
+  },
+  {
+    id: 'remaining_quantity',
     accessorKey: 'remaining_quantity',
-    header: ({ column }) => (
-      <Button
-        variant='ghost'
-        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className='h-auto p-0 font-semibold'
-      >
-        Số lượng
-        <ArrowUpDown className='ml-2 h-4 w-4' />
-      </Button>
+    header: ({ column }: { column: Column<SampleProduct, unknown> }) => (
+      <DataTableColumnHeader column={column} title='Còn lại' />
     ),
-    cell: ({ row }) => {
-      const quantity = row.getValue('remaining_quantity') as number;
-
-      const getQuantityColor = (qty: number) => {
-        if (qty === 0) return 'text-destructive';
-        if (qty <= 5) return 'text-yellow-600';
-        return 'text-green-600';
-      };
-
+    cell: ({ cell }) => {
+      const quantity = cell.getValue<SampleProduct['remaining_quantity']>();
       return (
-        <span className={`font-medium ${getQuantityColor(quantity)}`}>
+        <Badge
+          variant={
+            quantity <= 5
+              ? 'destructive'
+              : quantity <= 10
+                ? 'outline'
+                : 'default'
+          }
+        >
           {quantity}
-        </span>
-      );
-    }
-  },
-  {
-    accessorKey: 'quality',
-    header: 'Chất lượng',
-    cell: ({ row }) => {
-      const quality = row.getValue('quality') as string;
-      return quality ? (
-        <span className='text-sm'>{quality}</span>
-      ) : (
-        <span className='text-muted-foreground'>N/A</span>
-      );
-    }
-  },
-  {
-    accessorKey: 'sample_location',
-    header: 'Vị trí',
-    cell: ({ row }) => {
-      const location = row.getValue('sample_location') as string;
-      return location ? (
-        <Badge variant='outline' className='text-xs'>
-          {location}
         </Badge>
-      ) : (
-        <span className='text-muted-foreground'>N/A</span>
-      );
-    }
-  },
-  {
-    accessorKey: 'created_at',
-    header: ({ column }) => (
-      <Button
-        variant='ghost'
-        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className='h-auto p-0 font-semibold'
-      >
-        Ngày tạo
-        <ArrowUpDown className='ml-2 h-4 w-4' />
-      </Button>
-    ),
-    cell: ({ row }) => {
-      const date = row.getValue('created_at') as string;
-      return (
-        <div className='text-sm'>
-          {format(new Date(date), 'dd/MM/yyyy', { locale: vi })}
-        </div>
       );
     }
   },
   {
     id: 'actions',
-    enableHiding: false,
     cell: ({ row }) => <CellAction data={row.original} />
   }
 ];
 
 // Helper function to get color value for display
-function getColorValue(color: string): string {
+function getColorValue(color?: string): string {
+  if (!color) return '#e5e7eb';
+
   const colorMap: Record<string, string> = {
     Trắng: '#ffffff',
     Đen: '#000000',
@@ -272,18 +201,7 @@ function getColorValue(color: string): string {
     Hồng: '#ffc0cb',
     Tím: '#800080',
     Cam: '#ffa500',
-    Nâu: '#a52a2a',
-    White: '#ffffff',
-    Black: '#000000',
-    Gray: '#808080',
-    Grey: '#808080',
-    Red: '#ff0000',
-    Blue: '#0000ff',
-    Yellow: '#ffff00',
-    Pink: '#ffc0cb',
-    Purple: '#800080',
-    Orange: '#ffa500',
-    Brown: '#a52a2a'
+    Nâu: '#a52a2a'
   };
 
   return colorMap[color] || '#e5e7eb';

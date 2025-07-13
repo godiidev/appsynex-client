@@ -1,77 +1,49 @@
 //src/features/samples/components/sample-listing.tsx
-'use client';
-
-import { useSearchParams } from 'next/navigation';
-import { useSamples } from '@/hooks/use-api';
-import { SampleFilters } from './sample-filters';
+import { SampleProduct } from '@/types/api';
+import { apiClient } from '@/lib/api-client';
+import { searchParamsCache } from '@/lib/searchparams';
 import { SampleTable } from './sample-tables';
-import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs';
+import { columns } from './sample-tables/columns';
 
-export function SampleListing() {
-  const searchParams = useSearchParams();
+type SampleListingPageProps = {};
 
-  const [filters, setFilters] = useQueryStates(
-    {
-      page: parseAsInteger.withDefault(1),
-      limit: parseAsInteger.withDefault(10),
-      search: parseAsString.withDefault(''),
-      category: parseAsString.withDefault(''),
-      sample_type: parseAsString.withDefault(''),
-      color: parseAsString.withDefault(''),
-      weight_min: parseAsInteger,
-      weight_max: parseAsInteger,
-      width_min: parseAsInteger,
-      width_max: parseAsInteger
-    },
-    {
-      history: 'push'
-    }
-  );
+export default async function SampleListingPage({}: SampleListingPageProps) {
+  // Showcasing the use of search params cache in nested RSCs
+  const page = searchParamsCache.get('page');
+  const search = searchParamsCache.get('name');
+  const pageLimit = searchParamsCache.get('perPage');
+  const category = searchParamsCache.get('category');
+  const sampleType = searchParamsCache.get('sample_type');
+  const color = searchParamsCache.get('color');
+  const weightMin = searchParamsCache.get('weight_min');
+  const weightMax = searchParamsCache.get('weight_max');
+  const widthMin = searchParamsCache.get('width_min');
+  const widthMax = searchParamsCache.get('width_max');
 
-  const { data, isLoading, error } = useSamples(filters);
-
-  const handleFiltersChange = (newFilters: Partial<typeof filters>) => {
-    setFilters({
-      ...newFilters,
-      page: 1 // Reset to first page when filters change
-    });
+  const filters = {
+    page,
+    limit: pageLimit,
+    ...(search && { search }),
+    ...(category && { category }),
+    ...(sampleType && { sample_type: sampleType }),
+    ...(color && { color }),
+    ...(weightMin && { weight_min: weightMin }),
+    ...(weightMax && { weight_max: weightMax }),
+    ...(widthMin && { width_min: widthMin }),
+    ...(widthMax && { width_max: widthMax })
   };
 
-  const handlePageChange = (page: number) => {
-    setFilters({ page });
-  };
+  try {
+    const data = await apiClient.getSamples(filters);
+    const totalSamples = data.total_items;
+    const samples: SampleProduct[] = data.items;
 
-  if (error) {
     return (
-      <div className='flex h-96 w-full items-center justify-center'>
-        <div className='text-center'>
-          <h3 className='text-destructive text-lg font-semibold'>
-            Lỗi tải dữ liệu
-          </h3>
-          <p className='text-muted-foreground mt-2'>
-            {error.message || 'Không thể tải danh sách mẫu vải'}
-          </p>
-        </div>
-      </div>
+      <SampleTable data={samples} totalItems={totalSamples} columns={columns} />
     );
+  } catch (error) {
+    console.error('Error fetching samples:', error);
+    // Return empty state or error component
+    return <SampleTable data={[]} totalItems={0} columns={columns} />;
   }
-
-  return (
-    <div className='space-y-4'>
-      <SampleFilters
-        filters={filters}
-        onFiltersChange={handleFiltersChange}
-        isLoading={isLoading}
-      />
-
-      <SampleTable
-        data={data?.items || []}
-        totalItems={data?.total_items || 0}
-        currentPage={filters.page}
-        pageSize={filters.limit}
-        onPageChange={handlePageChange}
-        isLoading={isLoading}
-      />
-    </div>
-  );
 }

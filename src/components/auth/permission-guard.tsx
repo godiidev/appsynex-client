@@ -1,3 +1,4 @@
+//src/components/auth/permission-guard.tsx
 'use client';
 
 import { useAuth } from '@/providers/auth-provider';
