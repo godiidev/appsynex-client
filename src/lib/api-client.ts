@@ -39,6 +39,15 @@ class ApiClient {
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
+
+        // Debug log
+        console.log('API Request:', {
+          method: config.method?.toUpperCase(),
+          url: `${config.baseURL}${config.url}`,
+          hasAuth: !!token,
+          token: token ? `${token.substring(0, 10)}...` : 'none'
+        });
+
         return config;
       },
       (error) => Promise.reject(error)
@@ -46,13 +55,32 @@ class ApiClient {
 
     // Response interceptor for error handling
     this.client.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        console.log('API Response Success:', {
+          status: response.status,
+          url: response.config.url,
+          dataType: typeof response.data
+        });
+        return response;
+      },
       (error: AxiosError) => {
+        console.error('API Response Error:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          url: error.config?.url,
+          method: error.config?.method,
+          baseURL: error.config?.baseURL
+        });
+
+        // Handle 401 specifically
         if (error.response?.status === 401) {
-          // Token expired or invalid
+          console.log(
+            '401 Unauthorized - Removing token and redirecting to login'
+          );
           removeToken();
           if (typeof window !== 'undefined') {
-            window.location.href = '/auth/sign-in';
+            window.location.href = '/login';
           }
         }
         return Promise.reject(error);
@@ -65,17 +93,60 @@ class ApiClient {
   }
 
   private async handleError(error: AxiosError): Promise<never> {
-    const message = (error.response?.data as any)?.error || error.message;
+    let message = 'An error occurred';
+
+    if (error.response?.data) {
+      const errorData = error.response.data as any;
+      message = errorData.error || errorData.message || error.message;
+    } else if (error.message) {
+      message = error.message;
+    }
+
+    // Add more context for specific errors
+    if (error.response?.status === 401) {
+      message = 'Authentication required. Please log in.';
+    } else if (error.response?.status === 403) {
+      message = 'You do not have permission to perform this action.';
+    } else if (error.response?.status === 404) {
+      message = 'Resource not found.';
+    } else if (error.response?.status >= 500) {
+      message = 'Server error. Please try again later.';
+    }
+
+    console.error('API Error Details:', {
+      status: error.response?.status,
+      message,
+      url: error.config?.url,
+      method: error.config?.method,
+      headers: error.config?.headers
+    });
+
     throw new Error(message);
   }
 
   // Auth API
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
+      console.log(
+        'Attempting login to:',
+        `${this.client.defaults.baseURL}/auth/login`
+      );
       const response = await this.client.post<LoginResponse>(
         '/auth/login',
         credentials
       );
+      console.log('Login successful, received token');
+      return this.handleResponse(response);
+    } catch (error) {
+      console.error('Login failed:', error);
+      return this.handleError(error as AxiosError);
+    }
+  }
+
+  // Test connection method
+  async testConnection(): Promise<any> {
+    try {
+      const response = await this.client.get('/health');
       return this.handleResponse(response);
     } catch (error) {
       return this.handleError(error as AxiosError);
@@ -87,6 +158,7 @@ class ApiClient {
     filters?: SampleFilterParams
   ): Promise<PaginatedResponse<SampleProduct>> {
     try {
+      console.log('Getting samples with filters:', filters);
       const response = await this.client.get<PaginatedResponse<SampleProduct>>(
         '/samples',
         {
@@ -95,6 +167,7 @@ class ApiClient {
       );
       return this.handleResponse(response);
     } catch (error) {
+      console.error('getSamples failed:', error);
       return this.handleError(error as AxiosError);
     }
   }
@@ -264,7 +337,6 @@ class ApiClient {
   // Product Names API (for sample form dropdown)
   async getProductNames(): Promise<ProductNameResponse[]> {
     try {
-      // Note: This endpoint might need to be added to Go server if not exists
       const response =
         await this.client.get<ProductNameResponse[]>('/product-names');
       return this.handleResponse(response);
