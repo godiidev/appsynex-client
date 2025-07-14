@@ -1,10 +1,14 @@
+//src/features/samples/components/sample-tables/columns.tsx
 'use client';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
 import { SampleProduct } from '@/types/api';
 import { Column, ColumnDef } from '@tanstack/react-table';
-import { Package, Text, Palette, Weight, Ruler } from 'lucide-react';
+import { Package, Text, Palette, Weight, Ruler, Copy } from 'lucide-react';
 import { CellAction } from './cell-action';
+import { toast } from 'sonner';
 import {
   CATEGORY_OPTIONS,
   SAMPLE_TYPE_OPTIONS,
@@ -12,6 +16,61 @@ import {
 } from './options';
 
 export const columns: ColumnDef<SampleProduct>[] = [
+  {
+    id: 'select',
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && 'indeterminate')
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label='Select all'
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label='Select row'
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false
+  },
+  {
+    id: 'copy',
+    header: '',
+    cell: ({ row }) => {
+      const sample = row.original;
+
+      const handleCopy = () => {
+        const copyText = `${sample.sku} // ${sample.product_name?.product_name_en || 'N/A'} // ${sample.fiber_content || 'N/A'} // ${sample.weight ? `${sample.weight}GSM` : 'N/A'} ${sample.width ? `${sample.width}CM` : ''} // ${sample.color || 'N/A'} // ${sample.sample_location || 'N/A'}`;
+
+        navigator.clipboard
+          .writeText(copyText)
+          .then(() => {
+            toast.success('Đã sao chép thông tin sản phẩm');
+          })
+          .catch(() => {
+            toast.error('Lỗi khi sao chép');
+          });
+      };
+
+      return (
+        <Button
+          variant='ghost'
+          size='sm'
+          onClick={handleCopy}
+          className='h-8 w-8 p-0'
+        >
+          <Copy className='h-4 w-4' />
+        </Button>
+      );
+    },
+    enableSorting: false,
+    enableHiding: false
+  },
   {
     id: 'sku',
     accessorKey: 'sku',
@@ -23,12 +82,6 @@ export const columns: ColumnDef<SampleProduct>[] = [
         {cell.getValue<SampleProduct['sku']>()}
       </div>
     ),
-    meta: {
-      label: 'SKU',
-      placeholder: 'Search by SKU...',
-      variant: 'text',
-      icon: Package
-    },
     enableColumnFilter: true
   },
   {
@@ -52,9 +105,47 @@ export const columns: ColumnDef<SampleProduct>[] = [
     },
     meta: {
       label: 'Product Name',
-      placeholder: 'Search products...',
+      placeholder: 'Tìm sản phẩm mẫu...',
       variant: 'text',
       icon: Text
+    },
+    enableColumnFilter: true
+  },
+  {
+    id: 'weight',
+    accessorKey: 'weight',
+    header: ({ column }: { column: Column<SampleProduct, unknown> }) => (
+      <DataTableColumnHeader column={column} title='Trọng lượng (GSM)' />
+    ),
+    cell: ({ cell }) => {
+      const weight = cell.getValue<SampleProduct['weight']>();
+      return weight ? `${weight} GSM` : 'N/A';
+    },
+    meta: {
+      label: 'Weight',
+      variant: 'range',
+      range: [0, 500],
+      unit: 'GSM',
+      icon: Weight
+    },
+    enableColumnFilter: true
+  },
+  {
+    id: 'width',
+    accessorKey: 'width',
+    header: ({ column }: { column: Column<SampleProduct, unknown> }) => (
+      <DataTableColumnHeader column={column} title='Chiều rộng (CM)' />
+    ),
+    cell: ({ cell }) => {
+      const width = cell.getValue<SampleProduct['width']>();
+      return width ? `${width} CM` : 'N/A';
+    },
+    meta: {
+      label: 'Width',
+      variant: 'range',
+      range: [0, 250],
+      unit: 'CM',
+      icon: Ruler
     },
     enableColumnFilter: true
   },
@@ -120,42 +211,6 @@ export const columns: ColumnDef<SampleProduct>[] = [
       variant: 'select',
       options: COLOR_OPTIONS,
       icon: Palette
-    }
-  },
-  {
-    id: 'weight',
-    accessorKey: 'weight',
-    header: ({ column }: { column: Column<SampleProduct, unknown> }) => (
-      <DataTableColumnHeader column={column} title='Trọng lượng' />
-    ),
-    cell: ({ cell }) => {
-      const weight = cell.getValue<SampleProduct['weight']>();
-      return weight ? `${weight} GSM` : 'N/A';
-    },
-    meta: {
-      label: 'Weight',
-      variant: 'range',
-      range: [0, 1000],
-      unit: 'GSM',
-      icon: Weight
-    }
-  },
-  {
-    id: 'width',
-    accessorKey: 'width',
-    header: ({ column }: { column: Column<SampleProduct, unknown> }) => (
-      <DataTableColumnHeader column={column} title='Chiều rộng' />
-    ),
-    cell: ({ cell }) => {
-      const width = cell.getValue<SampleProduct['width']>();
-      return width ? `${width} CM` : 'N/A';
-    },
-    meta: {
-      label: 'Width',
-      variant: 'range',
-      range: [0, 300],
-      unit: 'CM',
-      icon: Ruler
     }
   },
   {

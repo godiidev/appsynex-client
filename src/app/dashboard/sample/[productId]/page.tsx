@@ -27,14 +27,14 @@ export default function SampleDetailPage() {
   const deleteMutation = useDeleteSample();
 
   const handleEdit = () => {
-    router.push(`/dashboard/samples/${sampleId}/edit`);
+    router.push(`/dashboard/sample/${sampleId}/edit`);
   };
 
   const handleDelete = async () => {
     if (window.confirm('Bạn có chắc chắn muốn xóa mẫu vải này?')) {
       try {
         await deleteMutation.mutateAsync(sampleId);
-        router.push('/dashboard/samples');
+        router.push('/dashboard/sample');
       } catch (error) {
         // Error is handled by the mutation
       }
@@ -55,7 +55,7 @@ export default function SampleDetailPage() {
             Mẫu vải này không tồn tại hoặc đã bị xóa.
           </p>
           <Button
-            onClick={() => router.push('/dashboard/samples')}
+            onClick={() => router.push('/dashboard/sample')}
             className='mt-4'
           >
             Quay lại danh sách

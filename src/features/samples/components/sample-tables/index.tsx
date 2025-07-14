@@ -1,3 +1,4 @@
+//src/app/features/samples/components/sample-tables/index.tsx
 'use client';
 
 import { DataTable } from '@/components/ui/table/data-table';

@@ -1,8 +1,9 @@
+//src/features/samples/components/sample-tables/cell-action.tsx
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { MoreHorizontal, Edit, Eye, Trash, Copy } from 'lucide-react';
+import { MoreHorizontal, Edit, Eye, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -35,11 +36,6 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-
-  const onCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Đã sao chép SKU');
-  };
 
   const onView = () => {
     router.push(`/dashboard/sample/${data.id}`);
@@ -74,10 +70,6 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align='end'>
           <DropdownMenuLabel>Hành động</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => onCopy(data.sku)}>
-            <Copy className='mr-2 h-4 w-4' />
-            Sao chép SKU
-          </DropdownMenuItem>
           <DropdownMenuSeparator />
 
           <PermissionGuard module='SAMPLE' action='VIEW'>
